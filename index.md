@@ -2,21 +2,7 @@
 
 _Last updated: 2026-07-12 · Applies to the Attar browser extension (hosted v1, incl. paid membership / top-up billing)_
 
-> **This is the in-repo source of truth.** The published copy lives at
-> `https://sayiho-qi.github.io/attar-privacy/` (separate GitHub Pages repo
-> `sayiho-qi/attar-privacy`). On any change: edit this file, then update the
-> published copy (Owner action — see `release-runbook.md` Owner checklist).
->
-> **S6c rewrite (ADR 0008 hosted pivot + amend A2 / invariant I6):** the previous
-> local-first version ("companion API on 127.0.0.1 / we do not operate any server /
-> No telemetry / OpenAI BYOK") is **superseded** — it never reflected the ADR 0008
-> hosted pivot and is now replaced end-to-end, and the "No telemetry" claim is
-> replaced by the opt-out usage-analytics disclosure below.
-
-Attar is a **hosted** browser extension. This policy states exactly what happens
-to your data, aligned with the project's architecture decisions (ADR 0008 hosted
-cloud architecture + its invariants I1–I6), which are enforced in code and
-covered by automated tests.
+Attar is a **hosted** browser extension. This policy states exactly what happens to your data.
 
 ## What Attar does with your data
 
@@ -31,7 +17,7 @@ covered by automated tests.
 2. **Cookies never leave your browser.** The extension never reads, stores or
    transmits cookies, session tokens or login state. The backend actively
    **rejects** any request containing cookie/session/key-shaped fields
-   (middleware-enforced, ADR 0008 I1/I2).
+  .
 3. **Account.** We store your **email** and your **usage counts** (次数) to run
    your account and enforce quota. Login is a 6-digit email code — no password.
 4. **Anonymous usage analytics (you can turn it off).** We collect anonymous
@@ -56,7 +42,7 @@ covered by automated tests.
    **虎皮椒 / Xunhupay** (domestic WeChat Pay / Alipay). You enter your card or
    wallet details **on the payment provider's page, not in Attar**. We **never**
    receive or store your card number, CVV, bank/wallet credentials or full payment
-   receipt (ADR 0008 invariant I4). What we store is **order metadata only**: an
+   receipt. What we store is **order metadata only**: an
    internal order id, the plan/SKU you bought, the amount and currency, the order
    status, timestamps, and the provider's transaction reference — linked to your
    account so we can grant your quota. Membership is a one-time annual charge, **not
