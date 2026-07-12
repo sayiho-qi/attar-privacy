@@ -1,65 +1,116 @@
 # Attar Privacy Policy
 
-_Last updated: 2026-07-10 · Applies to the Attar browser extension v0.3.x_
+_Last updated: 2026-07-12 · Applies to the Attar browser extension (hosted v1, incl. paid membership / top-up billing)_
 
-Attar is a local-first browser extension. This policy states exactly what the
-extension does with data — aligned with the project's architecture decisions
-(ADR 0002 privacy boundary, ADR 0005 key boundary), which are enforced in code
-and covered by automated tests.
+> **This is the in-repo source of truth.** The published copy lives at
+> `https://sayiho-qi.github.io/attar-privacy/` (separate GitHub Pages repo
+> `sayiho-qi/attar-privacy`). On any change: edit this file, then update the
+> published copy (Owner action — see `release-runbook.md` Owner checklist).
+>
+> **S6c rewrite (ADR 0008 hosted pivot + amend A2 / invariant I6):** the previous
+> local-first version ("companion API on 127.0.0.1 / we do not operate any server /
+> No telemetry / OpenAI BYOK") is **superseded** — it never reflected the ADR 0008
+> hosted pivot and is now replaced end-to-end, and the "No telemetry" claim is
+> replaced by the opt-out usage-analytics disclosure below.
+
+Attar is a **hosted** browser extension. This policy states exactly what happens
+to your data, aligned with the project's architecture decisions (ADR 0008 hosted
+cloud architecture + its invariants I1–I6), which are enforced in code and
+covered by automated tests.
 
 ## What Attar does with your data
 
-1. **Page content goes only to your own machine.** When you click Capture (or
-   run Creator Watch), the extension extracts the visible text of the page and
-   sends it to a **companion API service running on your own computer at
-   `http://127.0.0.1:8000`**. Nothing is sent to any server operated by us —
-   we do not operate any server.
+1. **Content you choose to distill is processed on our hosted service.** When you
+   click Capture or paste a link, the extension extracts the page text (and, for
+   videos, downloads in your own browser the media you selected) and sends it to
+   our backend, which transcribes, distills, and — if you leave 画面理解 on —
+   reads key video frames. **Transient audio/video and extracted frames are
+   deleted after processing** (they are not stored long-term). The uploaded video
+   frames may contain identifiable third parties (bystanders / faces / private
+   scenes) — we process them only to produce your note and delete them after use.
 2. **Cookies never leave your browser.** The extension never reads, stores or
-   transmits cookies, session tokens or login state. The companion service
-   actively **rejects** any request containing cookie/session/key-shaped
-   fields (middleware-enforced).
-3. **No telemetry. No analytics. No crash reporting.** There is none — so this
-   policy says "none".
-4. **Cloud engine is opt-in and user-configured.** If — and only if — you put
-   your own OpenAI API key into the companion service's environment (`.env` on
-   your machine) **and** explicitly select the cloud engine (or explicitly
-   click "Synthesize DNA (cloud)"), the companion service on your machine
-   sends the **already-extracted text** (and, for DNA synthesis, distilled
-   five-dimension text plus item identifiers) directly to OpenAI. This payload
-   never contains cookies, API keys, or identity fields. Your API key is never
-   stored in, displayed by, or transmitted through the extension.
-5. **Scheduled watching is off by default** and bounded by a kill switch, a
-   daily run quota and a per-creator cap. Every run is recorded in a local run
-   log, including which engine it used.
+   transmits cookies, session tokens or login state. The backend actively
+   **rejects** any request containing cookie/session/key-shaped fields
+   (middleware-enforced, ADR 0008 I1/I2).
+3. **Account.** We store your **email** and your **usage counts** (次数) to run
+   your account and enforce quota. Login is a 6-digit email code — no password.
+4. **Anonymous usage analytics (you can turn it off).** We collect anonymous
+   behavior events — an **action name, timestamp and short result code** plus
+   low-cardinality context (platform, content type, a coarse duration bucket).
+   This **never** includes your page text, transcripts, note bodies, links with
+   content, cookies, keys, email or precise device/IP. Events are keyed by an
+   internal numeric user id (not your email). **You can turn analytics off** in
+   the extension's Setup — when off, the extension does not send any events and
+   clears its local buffer. Passive analytics detail is retained ~90 days, then
+   deleted (aggregates may be kept).
+5. **Ratings & feedback you submit.** When you rate a result (👍/👎) or send
+   feedback, we store what you submit: for a 👎, the reason chips + any optional
+   text you type; for feedback, your message (and an optional contact email if you
+   give one). A rating also carries zero-content context tags (result type /
+   platform / duration bucket, etc.) so we can see what's working — the rating UI
+   discloses this, and it applies even if you turned analytics off (rating is
+   something you actively submit).
+6. **Payment (membership & top-up).** Attar has a free monthly quota plus optional
+   paid plans (annual membership and a top-up pack). **Payment is processed by
+   third-party payment providers** — **Stripe** (overseas card payments) and
+   **虎皮椒 / Xunhupay** (domestic WeChat Pay / Alipay). You enter your card or
+   wallet details **on the payment provider's page, not in Attar**. We **never**
+   receive or store your card number, CVV, bank/wallet credentials or full payment
+   receipt (ADR 0008 invariant I4). What we store is **order metadata only**: an
+   internal order id, the plan/SKU you bought, the amount and currency, the order
+   status, timestamps, and the provider's transaction reference — linked to your
+   account so we can grant your quota. Membership is a one-time annual charge, **not
+   auto-renewing**. Refund handling follows the Terms of Service.
+
+## Third-party processors
+
+We share the minimum data needed with the following processors. We do **not** sell
+your data to anyone.
+
+- **Anthropic** (Claude Haiku) — content distillation + key-frame vision. Receives
+  the extracted text / frames of the content you chose to distill.
+- **ASR (speech-to-text) provider** — **OpenAI** (OpenAI-compatible Whisper),
+  with **Groq** / **Deepgram** as interchangeable alternates. Receives the audio of
+  the video you chose, to transcribe it. Transient audio is deleted after use.
+- **Resend** — transactional email delivery. Receives your email address to send
+  your 6-digit login code. It is not used for marketing.
+- **Stripe** — overseas card payment processing. You transact on Stripe's page;
+  Attar receives only order metadata (above).
+- **虎皮椒 / Xunhupay** — domestic (China) WeChat Pay / Alipay aggregation. You
+  transact on the provider's page; Attar receives only order metadata (above).
+- **Cloudflare** — DNS, TLS and edge/CDN in front of `api.useattar.com`. Sees
+  request metadata (e.g. IP) in transit as part of routing.
+- **Vultr** — cloud server hosting for our backend and database.
 
 ## What Attar stores locally (in your browser's extension storage)
 
-- Extension configuration (engine preference, one-time notice acknowledgement).
-- Creator Watch configuration (creators you added, schedules).
-- Review-queue drafts (distilled notes pending your review) and account DNA
-  documents.
-- De-duplication ledgers (which items were already processed — prevents
-  double-billing) and a local run log.
-
-Saved notes are plain `.md` files downloaded to your disk — they are yours.
+- Your session token + email (so login survives a restart) and Setup preferences
+  (including the 使用分析 opt-out toggle and the pending-event buffer).
+- Saved notes are plain `.md` files you download to your disk — they are yours.
 
 ## Data deletion
 
-Uninstall the extension (removes all extension storage) and delete any `.md`
-files you downloaded. If you configured a cloud key, remove it from your
-companion service `.env`. There is no server-side data to delete — none exists.
+- **Delete your account from the extension** (Setup → 注销账号并删除我的数据):
+  this removes your account email, usage/behavior events, ratings and feedback,
+  and anonymizes your metering records. Irreversible.
+- Uninstalling the extension removes local extension storage.
+- Downloaded `.md` files are on your disk — delete them yourself.
 
 ## Data disclosure summary (Chrome Web Store form basis)
 
-- Collected by developer: **nothing**.
-- Sold: **nothing**.
-- Processing location: **the user's own machine**; cloud tier is the user's
-  own key, direct from the user's machine to OpenAI, opt-in per the above.
+- **Collected by developer:** account email; anonymous usage analytics; user-
+  submitted ratings/feedback; processed content (transiently, deleted after use);
+  **order metadata** for purchases (no card data).
+- **Not collected by developer:** card numbers / payment credentials (handled by
+  the payment providers); browser cookies / login state (rejected in transit).
+- **Sold:** nothing.
+- **Processing location:** our hosted backend; third-party processors above.
+
+## Your rights (GDPR / CCPA-lite posture, overseas users)
+
+You may request access to or deletion of your data; account deletion is
+self-service in Setup. Contact us for any other request.
 
 ## Contact
 
 Owner: sayiho@gmail.com
-
-_Hosting note (OQ-6): publish this document at a publicly readable URL (GitHub
-Pages / gist / repo raw) and paste that URL into the store listing's privacy
-policy field — Owner decides the final URL at submission time._
