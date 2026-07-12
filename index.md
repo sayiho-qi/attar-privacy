@@ -16,8 +16,7 @@ Attar is a **hosted** browser extension. This policy states exactly what happens
    scenes) — we process them only to produce your note and delete them after use.
 2. **Cookies never leave your browser.** The extension never reads, stores or
    transmits cookies, session tokens or login state. The backend actively
-   **rejects** any request containing cookie/session/key-shaped fields
-  .
+   **rejects** any request containing cookie/session/key-shaped fields.
 3. **Account.** We store your **email** and your **usage counts** (次数) to run
    your account and enforce quota. Login is a 6-digit email code — no password.
 4. **Anonymous usage analytics (you can turn it off).** We collect anonymous
